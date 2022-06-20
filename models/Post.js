@@ -12,12 +12,12 @@ const PostSchema = new mongoose.Schema(
       unique: true,
     },
     tags: {
-      type: String,
+      type: Array,
       default: [],
     },
     imageUrl: String,
 
-    author: {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,

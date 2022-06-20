@@ -1,9 +1,10 @@
 import express from 'express';
 import mongoose from 'mongoose';
 
-import { registerValidation, loginValidation } from './validations.js';
+import { registerValidation, loginValidation, postCreateValidation } from './validations.js';
 import checkAuth from './utils/checkAuth.js';
 import { getMe, login, register } from './controllers/UserController.js';
+import * as PostController from './controllers/PostController.js';
 
 mongoose
   .connect(
@@ -24,6 +25,22 @@ app.post('/auth/register', registerValidation, register);
 // получение информации о нас, проверка авторизации
 app.get('/auth/me', checkAuth, getMe);
 // ------------------------------------
+
+// получение всех статей
+app.get('/posts', PostController.getAll);
+
+// получение одной статьи
+// app.get('/posts/:id', getOne);
+
+//создать статью
+app.post('/posts', checkAuth, postCreateValidation, PostController.create);
+
+// удаление статьи
+// app.delete('/posts', PostController.remove);
+
+//изменение статьи
+// app.patch('/posts', PostController.update);
+
 app.listen(4444, (err) => {
   if (err) {
     return console.log(err);
