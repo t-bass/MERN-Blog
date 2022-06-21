@@ -30,16 +30,16 @@ app.get('/auth/me', checkAuth, getMe);
 app.get('/posts', PostController.getAll);
 
 // получение одной статьи
-// app.get('/posts/:id', getOne);
+app.get('/posts/:id', PostController.getOne);
 
 //создать статью
 app.post('/posts', checkAuth, postCreateValidation, PostController.create);
 
 // удаление статьи
-// app.delete('/posts', PostController.remove);
+app.delete('/posts/:id', checkAuth, PostController.remove);
 
-//изменение статьи
-// app.patch('/posts', PostController.update);
+//изменение, обновление статьи
+app.patch('/posts/:id', PostController.update);
 
 app.listen(4444, (err) => {
   if (err) {
