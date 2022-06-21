@@ -1,10 +1,10 @@
 import express from 'express';
 import mongoose from 'mongoose';
+import multer from 'multer';
 
 import { registerValidation, loginValidation, postCreateValidation } from './validations.js';
-import checkAuth from './utils/checkAuth.js';
-import { getMe, login, register } from './controllers/UserController.js';
-import * as PostController from './controllers/PostController.js';
+import { PostController, UserController } from './controllers/index.js';
+import { handleValidationErrors, checkAuth } from './utils/index.js';
 
 mongoose
   .connect(
@@ -14,17 +14,36 @@ mongoose
   .catch((err) => console.log('DB error', err));
 
 const app = express();
+
+const storage = multer.diskStorage({
+  destination: (_, __, cb) => {
+    cb(null, 'uploads');
+  },
+  filename: (_, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage });
+
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
 // авторизация
-app.post('/auth/login', loginValidation, login);
+app.post('/auth/login', loginValidation, handleValidationErrors, UserController.login);
 // ------------------------------------
 // регистрация
-app.post('/auth/register', registerValidation, register);
+app.post('/auth/register', registerValidation, handleValidationErrors, UserController.register);
 // ------------------------------------
 // получение информации о нас, проверка авторизации
-app.get('/auth/me', checkAuth, getMe);
+app.get('/auth/me', checkAuth, UserController.getMe);
 // ------------------------------------
+
+app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
+  res.json({
+    url: `/uploads/${req.file.originalname}`,
+  });
+});
 
 // получение всех статей
 app.get('/posts', PostController.getAll);
@@ -33,13 +52,19 @@ app.get('/posts', PostController.getAll);
 app.get('/posts/:id', PostController.getOne);
 
 //создать статью
-app.post('/posts', checkAuth, postCreateValidation, PostController.create);
+app.post('/posts', checkAuth, postCreateValidation, handleValidationErrors, PostController.create);
 
 // удаление статьи
 app.delete('/posts/:id', checkAuth, PostController.remove);
 
 //изменение, обновление статьи
-app.patch('/posts/:id', PostController.update);
+app.patch(
+  '/posts/:id',
+  checkAuth,
+  postCreateValidation,
+  handleValidationErrors,
+  PostController.update,
+);
 
 app.listen(4444, (err) => {
   if (err) {
