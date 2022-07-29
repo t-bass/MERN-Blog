@@ -4,7 +4,6 @@ import PostModel from '../models/Post.js';
 export const getAll = async (req, res) => {
   try {
     const posts = await PostModel.find().populate('user').exec();
-
     res.json(posts);
   } catch (err) {
     console.log(err);
@@ -26,7 +25,7 @@ export const getLastTags = async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({
-      message: 'Не удалось получить статьи',
+      message: 'Не удалось получить тэги',
     });
   }
 };
@@ -35,7 +34,7 @@ export const getLastTags = async (req, res) => {
 export const getOne = async (req, res) => {
   try {
     const postId = req.params.id;
-    await PostModel.findOneAndUpdate(
+    PostModel.findOneAndUpdate(
       {
         _id: postId,
       },
@@ -59,7 +58,7 @@ export const getOne = async (req, res) => {
         }
         res.json(doc);
       },
-    );
+    ).populate('user');
   } catch (err) {
     console.log(err);
     res.status(500).json({
@@ -72,7 +71,7 @@ export const getOne = async (req, res) => {
 export const remove = async (req, res) => {
   try {
     const postId = req.params.id;
-    await PostModel.findOneAndDelete(
+    PostModel.findOneAndDelete(
       {
         _id: postId,
       },
@@ -108,7 +107,7 @@ export const create = async (req, res) => {
       title: req.body.title,
       text: req.body.text,
       imageUrl: req.body.imageUrl,
-      tags: req.body.tags,
+      tags: req.body.tags.split(','),
       user: req.userId,
     });
 
@@ -121,7 +120,7 @@ export const create = async (req, res) => {
     });
   }
 };
-//  изменения статьи
+//  изменение статьи
 export const update = async (req, res) => {
   try {
     const postId = req.params.id;
@@ -134,7 +133,7 @@ export const update = async (req, res) => {
         text: req.body.text,
         imageUrl: req.body.imageUrl,
         user: req.user,
-        tags: req.body.tags,
+        tags: req.body.tags.split(','),
       },
     );
     res.json({
@@ -143,7 +142,7 @@ export const update = async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({
-      message: 'Не удалось изменить статью',
+      message: 'Не удалось обновить статью',
     });
   }
 };
